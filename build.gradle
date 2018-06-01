@@ -18,21 +18,6 @@ repositories {
 
 // In this section you declare the dependencies for your production and test code
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'commons-logging:commons-logging:1.2'
-
-    // The production code uses the SLF4J logging API at compile time
-    /// compile 'org.slf4j:slf4j-api:1.7.21'
-    compile 'commons-io:commons-io:1.4'
-    compile 'org.apache.commons:commons-lang3:3.0.1'
-    compile 'org.eclipse.jetty:jetty-server:7.1.6.v20100715'
-    compile 'org.eclipse.jetty:jetty-servlet:7.1.6.v20100715'
-    // Was in our lib tree but apparently not used:
-    /// compile 'org.eclipse.jetty:jetty-servlets:7.1.6.v20100715'
-    compile 'com.google.guava:guava:20.0'
-    // Also in our lib tree was iText-5.0.2, apparently not used. 
-    /// compile 'org.apache.pdfbox:pdfbox:2.0.0'
-
     testCompile 'junit:junit:4.12'
 }
 
@@ -41,11 +26,7 @@ task docs(type: Javadoc) {
     source = sourceSets.main.allJava
     destinationDir = file('docs')
     options {
-        links "http://docs.oracle.com/javase/8/docs/api"
-
-        // These don't work for some reason:
-        links "http://pdfbox.apache.org/docs/2.0.0/javadocs"
-        links "http://google.github.io/guava/releases/19.0/api/docs"
+        links "https://docs.oracle.com/javase/8/docs/api"
 
         // Noisy in git diffs:
         noTimestamp()
@@ -101,7 +82,7 @@ def pomConfig = {
     }
 
     scm {
-        url "https://github.com/lkesteloot/teamten"
+        url "https://github.com/lkesteloot/teamten-image"
     }
 }
 
@@ -116,13 +97,13 @@ publishing {
                 classifier "javadoc"
             }
             groupId group
-            artifactId 'teamten'
+            artifactId 'teamten-image'
             version version
             pom.withXml {
                 def root = asNode()
                 root.appendNode('description', 'Variety of useful code.')
                 root.appendNode('name', 'Team Ten library')
-                root.appendNode('url', 'https://github.com/lkesteloot/teamten')
+                root.appendNode('url', 'https://github.com/lkesteloot/teamten-image')
                 root.children().last() + pomConfig
             }
         }
@@ -137,10 +118,10 @@ bintray {
 
     pkg {
         repo = 'com.teamten'
-        name = 'teamten'
+        name = 'teamten-image'
         userOrg = ''
         licenses = ['Apache-2.0']
-        vcsUrl = 'https://github.com/lkesteloot/teamten.git'
+        vcsUrl = 'https://github.com/lkesteloot/teamten-image.git'
         version {
             name = '1.0'
             desc = '1.0'
