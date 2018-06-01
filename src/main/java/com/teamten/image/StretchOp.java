@@ -36,6 +36,9 @@ public class StretchOp extends AbstractBufferedImageOp {
     /**
      * Specifies the size of the resulting image. Either the width or the height must
      * match the source.
+     *
+     * @param destWidth the width to stretch to.
+     * @param destHeight the height to stretch to.
      */
     public StretchOp(int destWidth, int destHeight) {
         mDestWidth = destWidth;

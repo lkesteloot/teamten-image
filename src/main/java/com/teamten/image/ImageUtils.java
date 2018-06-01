@@ -74,6 +74,10 @@ public class ImageUtils {
 
     /**
      * Create a new image of the given size with all pixels transparent.
+     *
+     * @param width width of the new image in pixels.
+     * @param height height of the new image in pixels.
+     * @return a transparent 4-byte ABGR image of the specified size.
      */
     public static BufferedImage makeTransparent(int width, int height) {
         log("Making a transparent image (%dx%d)", width, height);
@@ -90,6 +94,12 @@ public class ImageUtils {
 
     /**
      * Create a new image of the given size with a given background color.
+     *
+     * @param width width of the new image in pixels.
+     * @param height height of the new image in pixels.
+     * @param color color to fill the image with.
+     * @return a 3-byte BGR or 4-byte ABGR image (spending on the translucency
+     * of the color) of the specified size, filled with the specified color.
      */
     public static BufferedImage make(int width, int height, Color color) {
         log("Making an image of color %s (%dx%d)", color, width, height);
@@ -113,6 +123,10 @@ public class ImageUtils {
 
     /**
      * Create a new image of the given size with a white background.
+     *
+     * @param width width of the new image in pixels.
+     * @param height height of the new image in pixels.
+     * @return a 3-byte BGR white image of the specified size.
      */
     public static BufferedImage makeWhite(int width, int height) {
         return make(width, height, Color.WHITE);
@@ -122,6 +136,16 @@ public class ImageUtils {
      * Creates an image of the specified size with a linear gradient going from begin
      * to end, interpolating the specified colors linearly. Pixels
      * past the end of the line are the color of that end.
+     *
+     * @param width width of the new image in pixels.
+     * @param height height of the new image in pixels.
+     * @param beginX X coordinate of the starting gradient location.
+     * @param beginY Y coordinate of the starting gradient location.
+     * @param beginColor color at the starting location. Must be opaque.
+     * @param endX X coordinate of the ending gradient location.
+     * @param endY Y coordinate of the ending gradient location.
+     * @param endColor color at the ending location. Must be opaque.
+     * @return a 3-byte BGR image of the specified size with the specified gradient.
      */
     public static BufferedImage makeLinearGradient(int width, int height,
             int beginX, int beginY, Color beginColor, int endX, int endY, Color endColor) {
@@ -171,6 +195,16 @@ public class ImageUtils {
      * Creates an image of the specified size with a circular gradient going from center
      * to the edge (of the circle), interpolating the specified colors linearly. Pixels
      * past the edge of the circle are the color of the edge.
+     *
+     * @param width width of the new image in pixels.
+     * @param height height of the new image in pixels.
+     * @param centerX X coordinate of the center of the gradient.
+     * @param centerY Y coordinate of the center of the gradient.
+     * @param centerColor color at the center. Must be opaque.
+     * @param edgeX X coordinate of the edge gradient location.
+     * @param edgeY Y coordinate of the edge gradient location.
+     * @param edgeColor color at the edge location. Must be opaque.
+     * @return a 3-byte BGR image of the specified size with the specified gradient.
      */
     public static BufferedImage makeCircularGradient(int width, int height,
             int centerX, int centerY, Color centerColor, int edgeX, int edgeY, Color edgeColor) {
@@ -222,6 +256,9 @@ public class ImageUtils {
 
     /**
      * Creates a high-quality graphics objects for this object.
+     *
+     * @param image image to crate graphics context for.
+     * @return a graphics context with high quality settings.
      */
     public static Graphics2D createGraphics(BufferedImage image) {
         Graphics2D g = image.createGraphics();
@@ -233,6 +270,10 @@ public class ImageUtils {
 
     /**
      * Return the image with a new type.
+     *
+     * @param src image to convert. It is not modified.
+     * @param newType the new image type. See BufferedImage.TYPE_...
+     * @return a copy of the source image, but with the new type.
      */
     public static BufferedImage convertType(BufferedImage src, int newType) {
         // Annoying log.
@@ -245,6 +286,10 @@ public class ImageUtils {
 
     /**
      * Returns the name of the image type.
+     *
+     * @param imageType an image type. See BufferedImage.TYPE_...
+     * @return a string representing the image type. For example, BufferedImage.TYPE_3BYTE_BGR
+     * will return "3BYTE_BGR".
      */
     public static String getTypeName(int imageType) {
         switch (imageType) {
@@ -269,6 +314,8 @@ public class ImageUtils {
     /**
      * Return the number of bytes per pixel for this image.
      *
+     * @param image image to analyze.
+     * @return either 3 or 4, depending on the type of the image.
      * @throws IllegalArgumentException if the type is not TYPE_3BYTE_BGR or
      * TYPE_4BYTE_ABGR. Do not expand this set without checking all callers, since
      * they may be depending on this restricted set.
@@ -286,6 +333,9 @@ public class ImageUtils {
 
     /**
      * Make a copy of the image.
+     *
+     * @param image image to copy.
+     * @return a copy of the image, with the same pixels and type.
      */
     public static BufferedImage copy(BufferedImage image) {
         return convertType(image, image.getType());
@@ -293,6 +343,9 @@ public class ImageUtils {
 
     /**
      * Compose images over one another. The first layer in the array is the lowest one.
+     *
+     * @param layers array of layers, from lowest (obscured) to highest (visible).
+     * @return composed 4-byte ABGR image.
      */
     public static BufferedImage compose(BufferedImage ... layers) {
         int width = 0;
@@ -320,9 +373,12 @@ public class ImageUtils {
      * Returns the shadow of the input image. The shadow is based only on the
      * alpha channel.
      *
+     * @param image source image. Must be semi-transparent, since its alpha channel
+     * is used to make the shadow.
      * @param radius the size of the shadow, in pixels.
      * @param darkness how dark to make the shadow, where 0.0 means
      * none and 1.0 is the darkest.
+     * @return an image of the same size as the source with just the shadow of it.
      */
     public static BufferedImage makeShadow(BufferedImage image, double radius, double darkness) {
         log("Making a shadow of radius %g and darkness %g", radius, darkness);
@@ -372,8 +428,11 @@ public class ImageUtils {
     /**
      * Return an image with the original and its reflection.
      *
+     * @param image original image.
      * @param reflectionHeightFraction the fraction of the original height to make visible
      * in the reflection. 0.2 is a good value here.
+     * @return a new image, taller than the original, with the source image on
+     * top and the bottom part of the source image reflected at the bottom.
      */
     public static BufferedImage addReflection(BufferedImage image,
             double reflectionHeightFraction) {
@@ -421,6 +480,10 @@ public class ImageUtils {
     /**
      * Blurs an image using a high-quality high-speed two-pass algorithm.
      * Good stuff about blurring: http://www.jhlabs.com/ip/blurring.html
+     *
+     * @param image source image.
+     * @param radius blur radius.
+     * @return a blurred version of the source image.
      */
     public static BufferedImage blur(BufferedImage image, double radius) {
         log("Blurring with radius %g", radius);
@@ -433,8 +496,11 @@ public class ImageUtils {
     /**
      * Returns a copy of the image, rotated clockwise by "radians" radians.
      *
+     * @param image source image.
+     * @param radians how much to rotate.
      * @param fitNewImage to make the new image fit the rotate image. Otherwise
      * the new image is the same size and position as the input image.
+     * @return a rotated version of the source image.
      */
     public static BufferedImage rotate(BufferedImage image, double radians, boolean fitNewImage) {
         log("Rotating %d degrees clockwise", (int) Math.round(radians*180/Math.PI));
@@ -470,6 +536,9 @@ public class ImageUtils {
 
     /**
      * Returns a copy of the image, flipped vertically.
+     *
+     * @param image source image.
+     * @return a copy of the source image, flipped vertically (top to bottom).
      */
     public static BufferedImage flipVertically(BufferedImage image) {
         log("Flipping vertically");
@@ -482,6 +551,9 @@ public class ImageUtils {
 
     /**
      * Returns a copy of the image, flipped horizontally.
+     *
+     * @param image source image.
+     * @return a copy of the source image, flipped horizontally (left to right).
      */
     public static BufferedImage flipHorizontally(BufferedImage image) {
         log("Flipping horizontally");
@@ -496,6 +568,14 @@ public class ImageUtils {
      * Adds a margin to the image. The margin will be of the specified color,
      * unless the color, unless the color is null, in which case the margin
      * will be transparent.
+     *
+     * @param src source image.
+     * @param top number of pixels to add on top.
+     * @param right number of pixels to add on the right.
+     * @param bottom number of pixels to add on the bottom.
+     * @param left number of pixels to add on the left.
+     * @param color color for the margin, or transparent if null.
+     * @return a copy of the source image with the specified border.
      */
     public static BufferedImage addMargin(BufferedImage src,
             int top, int right, int bottom, int left, Color color) {
@@ -519,6 +599,11 @@ public class ImageUtils {
 
     /**
      * Returns a resized image.
+     *
+     * @param image source image.
+     * @param width new image width in pixels.
+     * @param height new image height in pixels.
+     * @return a resized copy of the source image.
      */
     public static BufferedImage resize(BufferedImage image, int width, int height) {
         log("Resizing from (%dx%d) to (%dx%d)",
@@ -531,6 +616,10 @@ public class ImageUtils {
     /**
      * Returns an image scaled by a particular ratio, where 0.5 means half width and
      * half height.
+     *
+     * @param image source image.
+     * @param ratio ratio of new image size to old image size.
+     * @return a resized copy of the source image.
      */
     public static BufferedImage scale(BufferedImage image, double ratio) {
         return resize(image,
@@ -541,6 +630,12 @@ public class ImageUtils {
     /**
      * Returns the image resized to fit in this size but keep the original aspect
      * ratio. Use 0 as either size (but not both) to mean "infinity".
+     *
+     * @param image source image.
+     * @param width max width of new image. Use 0 for "infinity".
+     * @param height max height of new image. Use 0 for "infinity".
+     * @return a copy of the source image resized to fit in the specified rectangle,
+     * keeping the original aspect ratio.
      */
     public static BufferedImage resizeToFit(BufferedImage image, int width, int height) {
         int fitWidth = width;
@@ -574,6 +669,13 @@ public class ImageUtils {
      * Like resizeToFit() but only shrinks. If the image is smaller, it is returned.
      * Returns the image shrunk to fit in this size but keep the original aspect
      * ratio. Use 0 as either size (but not both) to mean "infinity".
+     *
+     * @param image source image.
+     * @param width max width of new image. Use 0 for "infinity".
+     * @param height max height of new image. Use 0 for "infinity".
+     * @return a copy of the source image resized to fit in the specified rectangle,
+     * keeping the original aspect ratio. If the resized image would be larger,
+     * the original image is returned.
      */
     public static BufferedImage shrinkToFit(BufferedImage image, int width, int height) {
         int fitWidth = width;
@@ -609,9 +711,11 @@ public class ImageUtils {
     }
 
     /**
-     * Return the rectangle representing the part of the image that's not like the
-     * frame (specifically, not like the upper-left corner).
+     * Finds the trimming rectangle.
      *
+     * @param image source image.
+     * @return the rectangle representing the part of the image that's not like the
+     * frame (specifically, not like the upper-left corner).
      * @throws IllegalArgumentException if the entire image is the same color.
      */
     public static Rectangle getTrimmingRectangle(BufferedImage image) {
@@ -656,6 +760,8 @@ public class ImageUtils {
      * pixel. Returns the sub-image, which shares the raster data with the
      * input image.
      *
+     * @param image source image.
+     * @return a copy of the image with any constant-color border removed.
      * @throws IllegalArgumentException if the entire image is a single color.
      */
     public static BufferedImage trim(BufferedImage image) {
@@ -708,6 +814,10 @@ public class ImageUtils {
 
     /**
      * Returns the left part of an image.
+     *
+     * @param src source image.
+     * @param pixels the number of pixels to keep from the left side.
+     * @return an image that's a copy of the left side of the source image.
      */
     public static BufferedImage left(BufferedImage src, int pixels) {
         BufferedImage dest = new BufferedImage(pixels, src.getHeight(), src.getType());
@@ -717,6 +827,10 @@ public class ImageUtils {
 
     /**
      * Returns the right part of an image.
+     *
+     * @param src source image.
+     * @param pixels the number of pixels to keep from the right side.
+     * @return an image that's a copy of the right side of the source image.
      */
     public static BufferedImage right(BufferedImage src, int pixels) {
         BufferedImage dest = new BufferedImage(pixels, src.getHeight(), src.getType());
@@ -726,6 +840,10 @@ public class ImageUtils {
 
     /**
      * Returns the top part of an image.
+     *
+     * @param src source image.
+     * @param pixels the number of pixels to keep from the top side.
+     * @return an image that's a copy of the top side of the source image.
      */
     public static BufferedImage top(BufferedImage src, int pixels) {
         BufferedImage dest = new BufferedImage(src.getWidth(), pixels, src.getType());
@@ -735,6 +853,10 @@ public class ImageUtils {
 
     /**
      * Returns the bottom part of an image.
+     *
+     * @param src source image.
+     * @param pixels the number of pixels to keep from the bottom side.
+     * @return an image that's a copy of the bottom side of the source image.
      */
     public static BufferedImage bottom(BufferedImage src, int pixels) {
         BufferedImage dest = new BufferedImage(src.getWidth(), pixels, src.getType());
@@ -745,6 +867,13 @@ public class ImageUtils {
     /**
      * Returns the part of the image with the upper-left coordinate at x, y and
      * of width and height.
+     *
+     * @param src source image.
+     * @param x x coordinate of top left of the cropping rectangle.
+     * @param y y coordinate of top left of the cropping rectangle.
+     * @param width width of the cropping rectangle.
+     * @param height height of the cropping rectangle.
+     * @return a cropped copy of the source image.
      */
     public static BufferedImage crop(BufferedImage src, int x, int y, int width, int height) {
         BufferedImage dest = new BufferedImage(width, height, src.getType());
@@ -755,6 +884,9 @@ public class ImageUtils {
     /**
      * Concatenates the images left to right. Images are top-aligned, and the background
      * is initialized to black.
+     *
+     * @param layers images to concatenate.
+     * @return a new image with all source images concatenated left to right.
      */
     public static BufferedImage leftToRight(BufferedImage ... layers) {
         int width = 0;
@@ -783,6 +915,9 @@ public class ImageUtils {
     /**
      * Concatenates the images top to bottom. Images are left-aligned, and the background
      * is initialized to black.
+     *
+     * @param layers images to concatenate.
+     * @return a new image with all source images concatenated top to bottom.
      */
     public static BufferedImage topToBottom(BufferedImage ... layers) {
         int width = 0;
@@ -811,6 +946,12 @@ public class ImageUtils {
     /**
      * Returns an image with the top image pasted onto the bottom image at the specified
      * location.
+     *
+     * @param bottom image to draw on the bottom (below the top image).
+     * @param top image to draw on top of the bottom image.
+     * @param x x coordinate (in bottom image) of where to paste the top image.
+     * @param y y coordinate (in bottom image) of where to paste the top image.
+     * @return a copy of the bottom image with the top image pasted at x and y.
      */
     public static BufferedImage pasteAt(BufferedImage bottom, BufferedImage top, int x, int y) {
         BufferedImage dest = copy(bottom);
@@ -823,6 +964,14 @@ public class ImageUtils {
     /**
      * Returns an image with the top image pasted onto the bottom image at the specified
      * location and with the specified blending mode.
+     *
+     * @param bottom image to draw on the bottom (below the top image).
+     * @param top image to draw on top of the bottom image.
+     * @param x x coordinate (in bottom image) of where to paste the top image.
+     * @param y y coordinate (in bottom image) of where to paste the top image.
+     * @param blendingMode the mode to use for blending the top image. Can be
+     * NORMAL or SCREEN.
+     * @return a copy of the bottom image with the top image pasted at x and y.
      */
     public static BufferedImage pasteAtWith(BufferedImage bottom, BufferedImage top, int x, int y,
             BlendingMode blendingMode) {
@@ -878,6 +1027,9 @@ public class ImageUtils {
 
     /**
      * Converts a color image to grayscale. Keeps the alpha.
+     *
+     * @param image source image.
+     * @return a copy of the source, but in grayscale.
      */
     public static BufferedImage toGrayscale(BufferedImage image) {
         int width = image.getWidth();
@@ -906,8 +1058,12 @@ public class ImageUtils {
     }
 
     /**
-     * Returns a grayscale image of the edges of the red channel of the input
-     * image. Copies the input alpha channel, if any.
+     * Finds the edges (sharp changes) within an image. Copies the input alpha
+     * channel, if any.
+     *
+     * @param input source image.
+     * @return a grayscale image of the edges of the red channel of the input
+     * image.
      */
     public static BufferedImage findEdges(BufferedImage input) {
         int width = input.getWidth();
@@ -975,6 +1131,9 @@ public class ImageUtils {
 
     /**
      * Returns an inverted images. The alpha mask is untouched, if it's there.
+     *
+     * @param image source image.
+     * @return an inverted copy of the source image (black is white, white is black, etc.).
      */
     public static BufferedImage invert(BufferedImage image) {
         int width = image.getWidth();
@@ -1001,7 +1160,12 @@ public class ImageUtils {
 
     /**
      * Sets the image to the grayscale value of each pixel snapped to the nearest
-     * valid value. The alpha is untouched.
+     * valid value. Uses the red channel for input. The alpha is untouched.
+     *
+     * @param image source image.
+     * @param values possible grayscale values (0 to 255) to allow. Must
+     * be ordered.
+     * @return a grayscale version of the original, with only the allowed values.
      */
     public static BufferedImage quantize(BufferedImage image, int[] values) {
         int width = image.getWidth();
@@ -1046,8 +1210,15 @@ public class ImageUtils {
 
     /**
      * Sets the image to one of the textures specified depending on the value
-     * of each pixel snapped to the nearest valid value. The alpha is
-     * untouched.
+     * of each pixel snapped to the nearest valid value. The red channel
+     * is used for input. The alpha is untouched.
+     *
+     * @param image source image.
+     * @param values possible grayscale values (0 to 255) to snap the red channel to. Must
+     * be ordered.
+     * @param textures textures to use when the red channel of a pixel snaps to a
+     * value in in "values". Must be the same length as "values".
+     * @return a composite image of the textures, based on the textures.
      */
     public static BufferedImage quantizeTexture(BufferedImage image, int[] values,
             BufferedImage[] textures) {
@@ -1100,6 +1271,10 @@ public class ImageUtils {
      * Returns an image with the color of the main image (which must be BGR) and the
      * alpha of the mask (which must be ABGR, color is ignored). The two images must
      * be the same size.
+     *
+     * @param image source BGR image.
+     * @param mask source ABGR image for the mask. Its color is ignored.
+     * @return the source image masked to the alpha of the mask.
      */
     public static BufferedImage clipToMask(BufferedImage image, BufferedImage mask) {
         assert image.getType() == BufferedImage.TYPE_3BYTE_BGR;
@@ -1128,6 +1303,12 @@ public class ImageUtils {
 
     /**
      * Returns an semi-transparent image where the transparency was deduced from the color.
+     *
+     * @param image source image.
+     * @param grayTransparent gray value (0 to 255) to use for fully transparent.
+     * @param grayOpaque gray value (0 to 255) to use for fully opaque.
+     * @return a copy of the source image where the transparency is based on
+     * the grayscale value of each pixel.
      */
     public static BufferedImage grayToTransparent(BufferedImage image,
             int grayTransparent, int grayOpaque) {
@@ -1174,9 +1355,13 @@ public class ImageUtils {
     }
 
     /**
-     * Returns an interpolated color, where 0.0 means c1 and 1.0 means c2. Values outside
-     * the range 0.0 to 1.1 are valid and will be clamped at 0 and 255 (possibly causing
-     * distortion).
+     * Interpolates two colors.
+     *
+     * @param c1 one color.
+     * @param c2 the other color.
+     * @param fraction how much of c2 to have. 0.0 means c1 and 1.0 means c2. Values outside
+     * the range 0.0 to 1.1 will be clamped at 0 and 255 (possibly causing distortion).
+     * @return a color between c1 and c2.
      */
     public static Color interpolateColor(Color c1, Color c2, double fraction) {
         int c1R = c1.getRed();
@@ -1209,6 +1394,7 @@ public class ImageUtils {
      * @param color1 the color of the square in the upper-left corner
      * @param color2 the alternating color
      * @param squareSize the width and height of the checker square
+     * @return a checkerboard image.
      */
     public static BufferedImage makeCheckerboard(int width, int height,
             Color color1, Color color2, int squareSize) {
@@ -1231,6 +1417,9 @@ public class ImageUtils {
 
     /**
      * Compose the given image over a checkerboard to look for the transparency area.
+     *
+     * @param image source image.
+     * @return the source image over a checkerboard of the same size.
      */
     public static BufferedImage composeOverCheckerboard(BufferedImage image) {
         BufferedImage checkerboard = makeCheckerboard(
@@ -1244,6 +1433,10 @@ public class ImageUtils {
 
     /**
      * Load an image from a filename.
+     *
+     * @param filename the pathname of the image file to load.
+     * @return the loaded image.
+     * @throws IOException if there's a problem loading the image.
      */
     public static BufferedImage load(String filename) throws IOException {
         BufferedImage image = ImageIO.read(new File(filename));
@@ -1260,6 +1453,10 @@ public class ImageUtils {
 
     /**
      * Load an image from an input stream.
+     *
+     * @param inputStream the input stream of the image file to load.
+     * @return the loaded image.
+     * @throws IOException if there's a problem loading the image.
      */
     public static BufferedImage load(InputStream inputStream) throws IOException {
         BufferedImage image = ImageIO.read(inputStream);
@@ -1276,6 +1473,11 @@ public class ImageUtils {
 
     /**
      * Saves an image to a filename, auto-detecting the type.
+     *
+     * @param image source image.
+     * @param filename the pathname to save the file to. The extension is used
+     * for the file type. Supports PNG (.png) and JPEG (.jpg or .jpeg) files.
+     * @throws IOException if there's a problem saving the image.
      */
     public static void save(BufferedImage image, String filename) throws IOException {
         log("Saving \"%s\" (%dx%d)", filename, image.getWidth(), image.getHeight());
@@ -1297,6 +1499,12 @@ public class ImageUtils {
 
     /**
      * Saves an image to an output stream, auto-detecting the type from the MIME type.
+     *
+     * @param image source image.
+     * @param outputStream the output stream to save the file to.
+     * @param mimeType the type of the image. Use "image/png" for PNG and either
+     * "image/jpg" or "image/jpeg" for JPEG.
+     * @throws IOException if there's a problem saving the image.
      */
     public static void save(BufferedImage image, OutputStream outputStream, String mimeType)
         throws IOException {
@@ -1324,6 +1532,12 @@ public class ImageUtils {
      * image and whether to loop continuously. The filename must end with ".gif".
      *
      * Based on code from http://elliot.kroo.net/software/java/GifSequenceWriter/
+     *
+     * @param images source images.
+     * @param filename pathname of GIF to save to.
+     * @param frameTimeMs number of milliseconds to show each frame.
+     * @param loop whether to loop the animation.
+     * @throws IOException if there's a problem saving the image.
      */
     public static void saveAnimatedGif(List<BufferedImage> images, String filename,
             int frameTimeMs, boolean loop) throws IOException {
@@ -1441,6 +1655,8 @@ public class ImageUtils {
 
     /**
      * Returns an object setting as many things to high-quality as possible.
+     *
+     * @return a rendering hints object with high-quality settings.
      */
     public static RenderingHints getHighQualityRenderingHints() {
         return new RenderingHints(getHighQualityRenderingMap());
@@ -1448,6 +1664,8 @@ public class ImageUtils {
 
     /**
      * Returns a map setting as many things to high-quality as possible.
+     *
+     * @return a map setting as many things to high-quality as possible.
      */
     public static Map<RenderingHints.Key,Object> getHighQualityRenderingMap() {
         Map<RenderingHints.Key,Object> map = new HashMap<RenderingHints.Key,Object>();
@@ -1466,7 +1684,17 @@ public class ImageUtils {
     }
 
     /**
-     * Return a font of the specified typeface and attributes and size.
+     * Find a font. The font file must be in the JAR's resources directory.
+     *
+     * @param typeface the typeface of the font.
+     * @param bold whether the font should be bold.
+     * @param italic whether the font should be italic.
+     * @param narrow whether the font should be narrow.
+     * @param size the font size. It's not clear from the Java SDK's documentation
+     * what unit this value is.
+     * @return a font of the specified typeface and attributes and size.
+     * @throws FontFormatException if the file is not of a correct font format.
+     * @throws IOException if there's a problem loading the file.
      */
     public static Font getFont(Typeface typeface, boolean bold, boolean italic, boolean narrow,
             double size) throws FontFormatException, IOException {
@@ -1595,6 +1823,13 @@ public class ImageUtils {
     /**
      * Return a font from the specified filename and size. If the
      * filename is relative, then it will be relative to $HOME/fonts.
+     *
+     * @param filename the pathname to the font file. Must be a TrueType font.
+     * @param size the font size. It's not clear from the Java SDK's documentation
+     * what unit this value is.
+     * @return the loaded font.
+     * @throws FontFormatException if the file is not of a correct font format.
+     * @throws IOException if there's a problem loading the file.
      */
     public static Font getFont(String filename, double size)
         throws FontFormatException, IOException {

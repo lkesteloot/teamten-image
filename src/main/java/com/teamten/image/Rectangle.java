@@ -42,6 +42,12 @@ public class Rectangle {
 
     /**
      * Create a new instance from a location (inclusive) and a size.
+     *
+     * @param x x location of upper left corner.
+     * @param y y location of upper left corner.
+     * @param width width of rectangle.
+     * @param height height of rectangle.
+     * @return a rectangle of the specified location and size.
      */
     public static Rectangle makeFromSize(int x, int y, int width, int height) {
         return new Rectangle(x, y, width, height);
@@ -50,6 +56,12 @@ public class Rectangle {
     /**
      * Create a new instance from an upper-left location (inclusive) and lower-right
      * location (inclusive).
+     *
+     * @param x1 x location of upper left corner (inclusive).
+     * @param y1 y location of upper left corner (inclusive).
+     * @param x2 x location of lower right corner (inclusive).
+     * @param y2 y location of lower right corner (inclusive).
+     * @return a rectangle from corner to corner.
      */
     public static Rectangle makeFromInclusive(int x1, int y1, int x2, int y2) {
         return new Rectangle(x1, y1, x2 - x1 + 1, y2 - y1 + 1);
@@ -58,6 +70,12 @@ public class Rectangle {
     /**
      * Create a new instance from an upper-left location (inclusive) and lower-right
      * location (exclusive).
+     *
+     * @param x1 x location of upper left corner (inclusive).
+     * @param y1 y location of upper left corner (inclusive).
+     * @param x2 x location of lower right corner (exclusive).
+     * @param y2 y location of lower right corner (exclusive).
+     * @return a rectangle from corner to corner.
      */
     public static Rectangle makeFromExclusive(int x1, int y1, int x2, int y2) {
         return new Rectangle(x1, y1, x2 - x1, y2 - y1);
@@ -65,6 +83,8 @@ public class Rectangle {
 
     /**
      * Return X coordinate of upper-left corner, inclusive.
+     *
+     * @return X coordinate of upper-left corner, inclusive.
      */
     public int getX() {
         return mX;
@@ -72,6 +92,8 @@ public class Rectangle {
 
     /**
      * Return Y coordinate of upper-left corner, inclusive.
+     *
+     * @return Y coordinate of upper-left corner, inclusive.
      */
     public int getY() {
         return mY;
@@ -79,6 +101,8 @@ public class Rectangle {
 
     /**
      * Return width of rectangle.
+     *
+     * @return width of rectangle.
      */
     public int getWidth() {
         return mWidth;
@@ -86,6 +110,8 @@ public class Rectangle {
 
     /**
      * Return height of rectangle.
+     *
+     * @return height of rectangle.
      */
     public int getHeight() {
         return mHeight;
@@ -93,6 +119,8 @@ public class Rectangle {
 
     /**
      * Return the inclusive lower-right X coordinate.
+     *
+     * @return the inclusive lower-right X coordinate.
      */
     public int getInclusiveX2() {
         return mX + mWidth - 1;
@@ -100,6 +128,8 @@ public class Rectangle {
 
     /**
      * Return the inclusive lower-right Y coordinate.
+     *
+     * @return the inclusive lower-right Y coordinate.
      */
     public int getInclusiveY2() {
         return mY + mHeight - 1;
@@ -107,6 +137,8 @@ public class Rectangle {
 
     /**
      * Return the exclusive lower-right X coordinate.
+     *
+     * @return the exclusive lower-right X coordinate.
      */
     public int getExclusiveX2() {
         return mX + mWidth;
@@ -114,13 +146,17 @@ public class Rectangle {
 
     /**
      * Return the exclusive lower-right Y coordinate.
+     *
+     * @return the exclusive lower-right Y coordinate.
      */
     public int getExclusiveY2() {
         return mY + mHeight;
     }
 
     /**
-     * Return an X11-style string representation of the rectangle in the format
+     * A string version of the rectangle.
+     *
+     * @return an X11-style string representation of the rectangle in the format
      * "WIDTHxHEIGHT+X+Y".
      */
     public String toString() {

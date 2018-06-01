@@ -32,7 +32,9 @@ public class DecomposableConvolveOp extends AbstractBufferedImageOp {
 
     /**
      * The kernel is the horizontal or vertical cross-section of the 2D kernel
-     * through its center. The kernel should have an odd length.
+     * through its center.
+     *
+     * @param kernel the convolution kernel. Must have an odd length.
      */
     public DecomposableConvolveOp(double[] kernel) {
         assert kernel.length % 2 != 0;
@@ -128,6 +130,9 @@ public class DecomposableConvolveOp extends AbstractBufferedImageOp {
     /**
      * Returns a Gaussian kernel of the specified radius, where the radius represents
      * one sigma (standard deviation).
+     *
+     * @param radius one sigma of the gaussian kernel.
+     * @return a gaussian kernel with the specified sigma.
      */
     public static double[] makeGaussianKernel(double radius) {
         // This matches Photoshop.
