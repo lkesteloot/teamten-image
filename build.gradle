@@ -1,0 +1,150 @@
+
+plugins {
+    id "com.jfrog.bintray" version "1.8.0"
+    id "maven-publish"
+    id "java"
+}
+
+// Metadata.
+group = 'com.teamten'
+version = '1.0'
+
+// In this section you declare where to find the dependencies of your project
+repositories {
+    // Use 'jcenter' for resolving your dependencies.
+    // You can declare any Maven/Ivy/file repository here.
+    jcenter()
+}
+
+// In this section you declare the dependencies for your production and test code
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile 'commons-logging:commons-logging:1.2'
+
+    // The production code uses the SLF4J logging API at compile time
+    /// compile 'org.slf4j:slf4j-api:1.7.21'
+    compile 'commons-io:commons-io:1.4'
+    compile 'org.apache.commons:commons-lang3:3.0.1'
+    compile 'org.eclipse.jetty:jetty-server:7.1.6.v20100715'
+    compile 'org.eclipse.jetty:jetty-servlet:7.1.6.v20100715'
+    // Was in our lib tree but apparently not used:
+    /// compile 'org.eclipse.jetty:jetty-servlets:7.1.6.v20100715'
+    compile 'com.google.guava:guava:20.0'
+    // Also in our lib tree was iText-5.0.2, apparently not used. 
+    /// compile 'org.apache.pdfbox:pdfbox:2.0.0'
+
+    testCompile 'junit:junit:4.12'
+}
+
+// My task for generating javadocs that are published on github IO pages.
+task docs(type: Javadoc) {
+    source = sourceSets.main.allJava
+    destinationDir = file('docs')
+    options {
+        links "http://docs.oracle.com/javase/8/docs/api"
+
+        // These don't work for some reason:
+        links "http://pdfbox.apache.org/docs/2.0.0/javadocs"
+        links "http://google.github.io/guava/releases/19.0/api/docs"
+
+        // Noisy in git diffs:
+        noTimestamp()
+    }
+}
+
+// Add command-line options for compiler. Might not apply to tests.
+tasks.withType(JavaCompile) {
+    options.compilerArgs << "-Xlint:unchecked" << "-Werror"
+}
+
+// Where to put the jar file when the "uploadArchives" task is run.
+uploadArchives {
+    repositories {
+        flatDir {
+            dirs 'repo'
+        }
+    }
+}
+
+// https://reflectoring.io/guide-publishing-to-bintray-with-gradle/
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+javadoc.failOnError = false
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+}
+
+// Used below in the "pom" object.
+def pomConfig = {
+    licenses {
+        license {
+            name "The Apache Software License, Version 2.0"
+            url "http://www.apache.org/licenses/LICENSE-2.0.txt"
+            distribution "repo"
+        }
+    }
+    developers {
+        developer {
+            id "lkesteloot"
+            name "Lawrence Kesteloot"
+            email "lk@teamten.com"
+        }
+    }
+
+    scm {
+        url "https://github.com/lkesteloot/teamten"
+    }
+}
+
+publishing {
+    publications {
+        mavenPublication(MavenPublication) {
+            from components.java
+            artifact sourcesJar {
+                classifier "sources"
+            }
+            artifact javadocJar {
+                classifier "javadoc"
+            }
+            groupId group
+            artifactId 'teamten'
+            version version
+            pom.withXml {
+                def root = asNode()
+                root.appendNode('description', 'Variety of useful code.')
+                root.appendNode('name', 'Team Ten library')
+                root.appendNode('url', 'https://github.com/lkesteloot/teamten')
+                root.children().last() + pomConfig
+            }
+        }
+    }
+}
+
+// To publish to bintray (jcenter).
+bintray {
+    user = System.getProperty('bintray.user')
+    key = System.getProperty('bintray.key')
+    publications = ['mavenPublication']
+
+    pkg {
+        repo = 'com.teamten'
+        name = 'teamten'
+        userOrg = ''
+        licenses = ['Apache-2.0']
+        vcsUrl = 'https://github.com/lkesteloot/teamten.git'
+        version {
+            name = '1.0'
+            desc = '1.0'
+            released = new Date()
+        }
+    }
+}
