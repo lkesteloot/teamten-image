@@ -101,7 +101,7 @@ publishing {
             version version
             pom.withXml {
                 def root = asNode()
-                root.appendNode('description', 'Variety of useful code.')
+                root.appendNode('description', 'Image processing library.')
                 root.appendNode('name', 'Team Ten library')
                 root.appendNode('url', 'https://github.com/lkesteloot/teamten-image')
                 root.children().last() + pomConfig

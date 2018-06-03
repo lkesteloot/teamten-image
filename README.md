@@ -1,4 +1,22 @@
-Java image processing library. See the [JavaDoc](https://lkesteloot.github.com/teamten-image).
+Java image processing library. See the [Javadoc](https://lkesteloot.github.com/teamten-image).
+
+Uses BufferedImage objects, treating them as immutable images:
+
+    BufferedImage image = ImageUtils.load(inputPathname);
+    image = ImageUtils.trim(image);
+    image = ImageUtils.addMargin(image, 20, 20, 20, 20);
+    image = ImageUtils.composeOverCheckerboard(image);
+    ImageUtils.save(image, outputPathname);
+
+Available in jcenter:
+
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        compile 'com.teamten:teamten-image:1.0'
+    }
 
 # License
 
