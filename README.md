@@ -1,6 +1,6 @@
 Java image processing library. See the [Javadoc](https://lkesteloot.github.com/teamten-image).
 
-Uses BufferedImage objects, treating them as immutable images:
+Uses the JDK's `BufferedImage` objects, treating them as immutable images:
 
     BufferedImage image = ImageUtils.load(inputPathname);
     image = ImageUtils.trim(image);
