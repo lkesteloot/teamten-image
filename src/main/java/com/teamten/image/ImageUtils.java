@@ -102,14 +102,14 @@ public class ImageUtils {
      * of the color) of the specified size, filled with the specified color.
      */
     public static BufferedImage make(int width, int height, Color color) {
-        log("Making an image of color %s (%dx%d)", color, width, height);
-
         int type;
-        if (color.getTransparency() == Transparency.TRANSLUCENT) {
+        if (color.getTransparency() != Transparency.OPAQUE) {
             type = BufferedImage.TYPE_4BYTE_ABGR;
         } else {
             type = BufferedImage.TYPE_3BYTE_BGR;
         }
+
+        log("Making an image of color %s, type %s (%dx%d)", color, getTypeName(type), width, height);
 
         BufferedImage image = new BufferedImage(width, height, type);
 

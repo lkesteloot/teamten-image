@@ -28,7 +28,38 @@ import java.awt.image.DataBufferByte;
  * the filter is linearly decomposable, and performs the operation in two passes.
  */
 public class DecomposableConvolveOp extends AbstractBufferedImageOp {
+    // Roughly approximate monitors.
+    private static final double GAMMA = 2.2;
+    private static final double[] GAMMA_TO_LINEAR;
     private final double[] mKernel;
+
+    static {
+        GAMMA_TO_LINEAR = new double[256];
+        for (int i = 0; i < 256; i++) {
+            GAMMA_TO_LINEAR[i] = Math.pow(i/255.0, GAMMA);
+        }
+    }
+
+    /**
+     * Converts a gamma-encoded value between 0 and 255 to a linear
+     * value between 0.0 and 1.0. The gamma is in the GAMMA constant.
+     */
+    private static double gammaToLinear(int linearValue) {
+        return GAMMA_TO_LINEAR[linearValue];
+    }
+
+    /**
+     * Converts a linear value between 0.0 and 1.0 to a gamma-encoded
+     * value between 0 and 255. The gamma is in the GAMMA constant.
+     */
+    private static int linearToGamma(double gammaValue) {
+        // Not worth doing a look-up table for this, it's only called once per
+        // output pixel. On a 1024x1024 image it would save at most 20ms.
+        int linearValue = (int) (Math.pow(gammaValue, 1/GAMMA)*255.9);
+
+        // Clamp.
+        return Math.min(Math.max(linearValue, 0), 255);
+    }
 
     /**
      * The kernel is the horizontal or vertical cross-section of the 2D kernel
@@ -105,18 +136,11 @@ public class DecomposableConvolveOp extends AbstractBufferedImageOp {
 
                         int byteIndex = yy*srcStride + clampedX*bytesPerPixel + b;
                         int pixel = (int) srcData[byteIndex] & 0xFF;
-                        sum += pixel * mKernel[i];
+                        sum += gammaToLinear(pixel) * mKernel[i];
                     }
 
                     // Clamp color for writing to byte.
-                    int result;
-                    if (sum < 0.5) {
-                        result = 0;
-                    } else if (sum >= 255.0) {
-                        result = 255;
-                    } else {
-                        result = (int) sum;
-                    }
+                    int result = linearToGamma(sum);
 
                     // Write transposed into destination image.
                     destData[xx*destStride + yy*bytesPerPixel + b] = (byte) result;
