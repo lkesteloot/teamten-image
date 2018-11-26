@@ -535,6 +535,40 @@ public class ImageUtils {
     }
 
     /**
+     * Return the image rotated counter-clockwise 90 degrees. The new image fits the rotated orientation.
+     */
+    public static BufferedImage rotateLeft(BufferedImage sourceImage) {
+        int width = sourceImage.getWidth();
+        int height = sourceImage.getHeight();
+
+        BufferedImage destImage = new BufferedImage(height, width, sourceImage.getType());
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                destImage.setRGB(y, width - x - 1, sourceImage.getRGB(x, y));
+            }
+        }
+
+        return destImage;
+    }
+
+    /**
+     * Return the image rotated clockwise 90 degrees. The new image fits the rotated orientation.
+     */
+    public static BufferedImage rotateRight(BufferedImage sourceImage) {
+        int width = sourceImage.getWidth();
+        int height = sourceImage.getHeight();
+
+        BufferedImage destImage = new BufferedImage(height, width, sourceImage.getType());
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                destImage.setRGB(height - y - 1, x, sourceImage.getRGB(x, y));
+            }
+        }
+
+        return destImage;
+    }
+
+    /**
      * Returns a copy of the image, flipped vertically.
      *
      * @param image source image.
