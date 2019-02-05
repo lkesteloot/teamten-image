@@ -32,6 +32,7 @@ public class DecomposableConvolveOp extends AbstractBufferedImageOp {
     private static final double GAMMA = 2.2;
     private static final double[] GAMMA_TO_LINEAR;
     private final double[] mKernel;
+    private final double mBrightness;
 
     static {
         GAMMA_TO_LINEAR = new double[256];
@@ -44,21 +45,21 @@ public class DecomposableConvolveOp extends AbstractBufferedImageOp {
      * Converts a gamma-encoded value between 0 and 255 to a linear
      * value between 0.0 and 1.0. The gamma is in the GAMMA constant.
      */
-    private static double gammaToLinear(int linearValue) {
-        return GAMMA_TO_LINEAR[linearValue];
+    private static double gammaToLinear(int gammaValue) {
+        return GAMMA_TO_LINEAR[gammaValue];
     }
 
     /**
      * Converts a linear value between 0.0 and 1.0 to a gamma-encoded
      * value between 0 and 255. The gamma is in the GAMMA constant.
      */
-    private static int linearToGamma(double gammaValue) {
+    private static int linearToGamma(double linearValue) {
         // Not worth doing a look-up table for this, it's only called once per
         // output pixel. On a 1024x1024 image it would save at most 20ms.
-        int linearValue = (int) (Math.pow(gammaValue, 1/GAMMA)*255.9);
+        int gammaValue = (int) (Math.pow(linearValue, 1/GAMMA)*255.9);
 
         // Clamp.
-        return Math.min(Math.max(linearValue, 0), 255);
+        return Math.min(Math.max(gammaValue, 0), 255);
     }
 
     /**
@@ -66,11 +67,13 @@ public class DecomposableConvolveOp extends AbstractBufferedImageOp {
      * through its center.
      *
      * @param kernel the convolution kernel. Must have an odd length.
+     * @param brightness how much to multiply the source image by before blurring.
      */
-    public DecomposableConvolveOp(double[] kernel) {
+    public DecomposableConvolveOp(double[] kernel, double brightness) {
         assert kernel.length % 2 != 0;
 
         mKernel = kernel;
+        mBrightness = brightness;
     }
 
     @Override // BufferedImageOp
@@ -89,6 +92,7 @@ public class DecomposableConvolveOp extends AbstractBufferedImageOp {
      */
     private BufferedImage convolve(BufferedImage src) {
         int bytesPerPixel = src.getColorModel().getNumComponents();
+        boolean hasAlpha = bytesPerPixel == 4;
 
         int width = src.getWidth();
         int height = src.getHeight();
@@ -114,12 +118,18 @@ public class DecomposableConvolveOp extends AbstractBufferedImageOp {
 
         // Go through every row of the source image.
         for (int yy = 0; yy < height; yy++) {
+            if (yy % 1000 == 0) {
+                System.out.printf("Operation at line %d of %d%n", yy, height);
+            }
             // Go through every pixel of the source row.
             for (int xx = 0; xx < width; xx++) {
                 // For every color component.
                 for (int b = 0; b < bytesPerPixel; b++) {
+                    boolean isAlpha = hasAlpha && b == 0;
+
                     // Apply the convolution.
                     double sum = 0.0;
+                    double denominator = 0.0;
                     for (int i = 0; i < mKernel.length; i++) {
                         // Position in source image.
                         int x = xx - filterRadius + i;
@@ -134,13 +144,29 @@ public class DecomposableConvolveOp extends AbstractBufferedImageOp {
                             clampedX = x;
                         }
 
-                        int byteIndex = yy*srcStride + clampedX*bytesPerPixel + b;
-                        int pixel = (int) srcData[byteIndex] & 0xFF;
-                        sum += gammaToLinear(pixel) * mKernel[i];
+                        int byteIndex = yy*srcStride + clampedX*bytesPerPixel;
+                        int pixel = (int) srcData[byteIndex + b] & 0xFF;
+                        if (isAlpha) {
+                            sum += pixel*mKernel[i];
+                        } else {
+                            int alpha = hasAlpha ? (int) srcData[byteIndex] & 0xFF : 255;
+                            double weight = alpha*mKernel[i];
+                            sum += gammaToLinear(pixel)*weight;
+                            denominator += weight;
+                        }
+                    }
+
+                    if (denominator != 0) {
+                        sum *= mBrightness/denominator;
                     }
 
                     // Clamp color for writing to byte.
-                    int result = linearToGamma(sum);
+                    int result;
+                    if (isAlpha) {
+                        result = Math.min(Math.max((int) (sum + 0.5), 0), 255);
+                    } else {
+                        result = linearToGamma(sum);
+                    }
 
                     // Write transposed into destination image.
                     destData[xx*destStride + yy*bytesPerPixel + b] = (byte) result;

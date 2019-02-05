@@ -489,7 +489,22 @@ public class ImageUtils {
         log("Blurring with radius %g", radius);
 
         DecomposableConvolveOp op = new DecomposableConvolveOp(
-                DecomposableConvolveOp.makeGaussianKernel(radius));
+                DecomposableConvolveOp.makeGaussianKernel(radius), 1);
+        return op.filter(image, null);
+    }
+
+    /**
+     * Brightens an image and blurs it, clipping to white.
+     * @param image source image.
+     * @param brightness factor to brighten. 1.0 makes this function behave like blur().
+     * @param radius blur radius.
+     * @return a brightened and blurred version of the source image.
+     */
+    public static BufferedImage glow(BufferedImage image, double brightness, double radius) {
+        log("Glowing with brightness %g and radius %g", brightness, radius);
+
+        DecomposableConvolveOp op = new DecomposableConvolveOp(
+                DecomposableConvolveOp.makeGaussianKernel(radius), brightness);
         return op.filter(image, null);
     }
 
