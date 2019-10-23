@@ -28,39 +28,8 @@ import java.awt.image.DataBufferByte;
  * the filter is linearly decomposable, and performs the operation in two passes.
  */
 public class DecomposableConvolveOp extends AbstractBufferedImageOp {
-    // Roughly approximate monitors.
-    private static final double GAMMA = 2.2;
-    private static final double[] GAMMA_TO_LINEAR;
     private final double[] mKernel;
     private final double mBrightness;
-
-    static {
-        GAMMA_TO_LINEAR = new double[256];
-        for (int i = 0; i < 256; i++) {
-            GAMMA_TO_LINEAR[i] = Math.pow(i/255.0, GAMMA);
-        }
-    }
-
-    /**
-     * Converts a gamma-encoded value between 0 and 255 to a linear
-     * value between 0.0 and 1.0. The gamma is in the GAMMA constant.
-     */
-    private static double gammaToLinear(int gammaValue) {
-        return GAMMA_TO_LINEAR[gammaValue];
-    }
-
-    /**
-     * Converts a linear value between 0.0 and 1.0 to a gamma-encoded
-     * value between 0 and 255. The gamma is in the GAMMA constant.
-     */
-    private static int linearToGamma(double linearValue) {
-        // Not worth doing a look-up table for this, it's only called once per
-        // output pixel. On a 1024x1024 image it would save at most 20ms.
-        int gammaValue = (int) (Math.pow(linearValue, 1/GAMMA)*255.9);
-
-        // Clamp.
-        return Math.min(Math.max(gammaValue, 0), 255);
-    }
 
     /**
      * The kernel is the horizontal or vertical cross-section of the 2D kernel
@@ -145,13 +114,13 @@ public class DecomposableConvolveOp extends AbstractBufferedImageOp {
                         }
 
                         int byteIndex = yy*srcStride + clampedX*bytesPerPixel;
-                        int pixel = (int) srcData[byteIndex + b] & 0xFF;
+                        int pixel = ColorUtils.byteToInt(srcData[byteIndex + b]);
                         if (isAlpha) {
                             sum += pixel*mKernel[i];
                         } else {
-                            int alpha = hasAlpha ? (int) srcData[byteIndex] & 0xFF : 255;
+                            int alpha = hasAlpha ? ColorUtils.byteToInt(srcData[byteIndex]) : 255;
                             double weight = alpha*mKernel[i];
-                            sum += gammaToLinear(pixel)*weight;
+                            sum += ColorUtils.gammaIntToDouble(pixel)*weight;
                             denominator += weight;
                         }
                     }
@@ -165,7 +134,7 @@ public class DecomposableConvolveOp extends AbstractBufferedImageOp {
                     if (isAlpha) {
                         result = Math.min(Math.max((int) (sum + 0.5), 0), 255);
                     } else {
-                        result = linearToGamma(sum);
+                        result = ColorUtils.doubleToGammaInt(sum);
                     }
 
                     // Write transposed into destination image.

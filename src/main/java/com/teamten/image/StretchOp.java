@@ -125,6 +125,9 @@ public class StretchOp extends AbstractBufferedImageOp {
             double scale, double invFilterScale, double filterRadius, double[] filter,
             int srcHeight, int bytesPerPixel, int srcStride, int destStride) {
 
+        boolean hasAlpha = bytesPerPixel == 4;
+        int firstColor = hasAlpha ? 1 : 0;
+
         // Go down the destination image. We use this as the outer loop because
         // for given destination row we must calculate the filter profile (including
         // clipping at the top and bottom edges) and we can reuse it for a whole row.
@@ -137,34 +140,44 @@ public class StretchOp extends AbstractBufferedImageOp {
             // exclusive.
             int beginY = Math.max(0, (int) Math.floor(srcCenterY - filterRadius));
             int endY = Math.min(srcHeight, (int) Math.ceil(srcCenterY + filterRadius));
+            int filterSize = endY - beginY;
 
             // Calculate the profile of the filter.
             makeFilter(beginY, endY, srcCenterY, invFilterScale, filter);
 
             // Go through the width of the image (which is the same in the
-            // source and destination) and each sub-color component.
-            for (int x = 0; x < mDestWidth*bytesPerPixel; x++) {
-                // Apply filter to this column and sub-color.
-                double result = 0.0;
-                for (int srcY = beginY; srcY < endY; srcY++) {
-                    result += ((int) srcData[srcY*srcStride + x] & 0xFF)*filter[srcY - beginY];
+            // source and destination).
+            for (int x = 0; x < mDestWidth*bytesPerPixel; x += bytesPerPixel) {
+                // If we have an alpha channel, compute it first, we'll need it for the other components.
+                double finalAlpha = 0.0;
+                if (hasAlpha) {
+                    // Apply filter to this column.
+                    for (int k = 0, pixel = beginY*srcStride + x; k < filterSize; k++, pixel += srcStride) {
+                        finalAlpha += ColorUtils.linearByteToDouble(srcData[pixel])*filter[k];
+                    }
+                    destData[destY*destStride + x] = ColorUtils.doubleToLinearByte(finalAlpha);
                 }
 
-                // Round to nearest value.
-                result += 0.5;
+                // For every color component.
+                for (int b = firstColor; b < bytesPerPixel; b++) {
+                    // Apply filter to this column.
+                    double result = 0.0;
+                    for (int k = 0, pixel = beginY*srcStride + x; k < filterSize; k++, pixel += srcStride) {
+                        double color = ColorUtils.gammaByteToDouble(srcData[pixel + b])*filter[k];
+                        if (hasAlpha) {
+                            double alpha = ColorUtils.linearByteToDouble(srcData[pixel]);
+                            color *= alpha;
+                        }
+                        result += color;
+                    }
 
-                // Clamp and convert to int.
-                int intResult;
-                if (result < 0.5) {
-                    intResult = 0;
-                } else if (result >= 255.0) {
-                    intResult = 255;
-                } else {
-                    intResult = (int) result;
+                    if (hasAlpha && finalAlpha != 0.0) {
+                        result /= finalAlpha;
+                    }
+
+                    // Write to destination image.
+                    destData[destY*destStride + x + b] = ColorUtils.doubleToGammaByte(result);
                 }
-
-                // Write to destination image.
-                destData[destY*destStride + x] = (byte) intResult;
             }
         }
     }
@@ -175,6 +188,9 @@ public class StretchOp extends AbstractBufferedImageOp {
     private void horizontalStretch(byte[] srcData, byte[] destData,
             double scale, double invFilterScale, double filterRadius, double[] filter,
             int srcWidth, int bytesPerPixel, int srcStride, int destStride) {
+
+        boolean hasAlpha = bytesPerPixel == 4;
+        int firstColor = hasAlpha ? 1 : 0;
 
         // Go across the destination image. We use this as the outer loop because
         // for given destination column we must calculate the filter profile (including
@@ -187,6 +203,7 @@ public class StretchOp extends AbstractBufferedImageOp {
             // exclusive.
             int beginX = Math.max(0, (int) Math.floor(srcCenterX - filterRadius));
             int endX = Math.min(srcWidth, (int) Math.ceil(srcCenterX + filterRadius));
+            int filterSize = endX - beginX;
 
             // Calculate the profile of the filter.
             makeFilter(beginX, endX, srcCenterX, invFilterScale, filter);
@@ -194,29 +211,35 @@ public class StretchOp extends AbstractBufferedImageOp {
             // Go through the height of the image (which is the same in the
             // source and destination).
             for (int y = 0; y < mDestHeight; y++) {
-                // Go through each sub-color.
-                for (int b = 0; b < bytesPerPixel; b++) {
+                // If we have an alpha channel, compute it first, we'll need it for the other components.
+                double finalAlpha = 0.0;
+                if (hasAlpha) {
+                    // Apply filter to this column.
+                    for (int k = 0, pixel = y*srcStride + beginX*bytesPerPixel; k < filterSize; k++, pixel += bytesPerPixel) {
+                        finalAlpha += ColorUtils.linearByteToDouble(srcData[pixel])*filter[k];
+                    }
+                    destData[y*destStride + destX*bytesPerPixel] = ColorUtils.doubleToLinearByte(finalAlpha);
+                }
+
+                // For every color component.
+                for (int b = firstColor; b < bytesPerPixel; b++) {
+                    // Apply filter to this row.
                     double result = 0.0;
-                    for (int srcX = beginX; srcX < endX; srcX++) {
-                        result += ((int) srcData[y*srcStride + srcX*bytesPerPixel + b] & 0xFF)
-                            *filter[srcX - beginX];
+                    for (int k = 0, pixel = y*srcStride + beginX*bytesPerPixel; k < filterSize; k++, pixel += bytesPerPixel) {
+                        double color = ColorUtils.gammaByteToDouble(srcData[pixel + b])*filter[k];
+                        if (hasAlpha) {
+                            double alpha = ColorUtils.linearByteToDouble(srcData[pixel]);
+                            color *= alpha;
+                        }
+                        result += color;
                     }
 
-                    // Round to nearest value.
-                    result += 0.5;
-
-                    // Clamp and convert to int.
-                    int intResult;
-                    if (result < 0.5) {
-                        intResult = 0;
-                    } else if (result >= 255.0) {
-                        intResult = 255;
-                    } else {
-                        intResult = (int) result;
+                    if (hasAlpha && finalAlpha != 0.0) {
+                        result /= finalAlpha;
                     }
 
                     // Write to destination image.
-                    destData[y*destStride + destX*bytesPerPixel + b] = (byte) intResult;
+                    destData[y*destStride + destX*bytesPerPixel + b] = ColorUtils.doubleToGammaByte(result);
                 }
             }
         }

@@ -1,6 +1,7 @@
 .gradle
 /build
 /UPLOAD
+/*.png
 
 # For IDEA:
 /.idea/workspace.xml
