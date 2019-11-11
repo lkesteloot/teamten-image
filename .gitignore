@@ -4,7 +4,7 @@
 /*.png
 
 # For IDEA:
-/.idea/workspace.xml
-/.idea/tasks.xml
+.idea/*
+!.idea/copyright
+!.idea/codeStyles/codeStyleConfig.xml
 /out
-## /.idea/libraries

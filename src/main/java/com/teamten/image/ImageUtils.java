@@ -20,6 +20,17 @@
 
 package com.teamten.image;
 
+import org.w3c.dom.Node;
+
+import javax.imageio.IIOImage;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageTypeSpecifier;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.metadata.IIOMetadata;
+import javax.imageio.metadata.IIOMetadataNode;
+import javax.imageio.stream.FileImageOutputStream;
+import javax.imageio.stream.ImageOutputStream;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontFormatException;
@@ -32,8 +43,6 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
-import java.awt.image.Kernel;
-
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -41,36 +50,22 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
+import java.io.PrintStream;
 import java.text.AttributedCharacterIterator;
-
-import java.util.HashMap;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.imageio.IIOImage;
-import javax.imageio.ImageIO;
-import javax.imageio.ImageTypeSpecifier;
-import javax.imageio.ImageWriteParam;
-import javax.imageio.ImageWriter;
-import javax.imageio.metadata.IIOMetadata;
-import javax.imageio.metadata.IIOMetadataNode;
-import javax.imageio.stream.FileImageOutputStream;
-import javax.imageio.stream.ImageOutputStream;
-
-import org.w3c.dom.Node;
-
 /**
  * Assorted utility methods for transforming images.
  */
 public class ImageUtils {
-    public static boolean PRINT_LOG = true;
     private static final File MY_FONT_DIR = new File("/Users/lk/Dropbox/Personal/Fonts");
     private static final String FONT_DIR = System.getProperty("user.home") +
         File.separator + "fonts";
     private static final Color TRANSPARENT = new Color(0, 0, 0, 0);
+    private static PrintStream mLogger = System.out;
 
     /**
      * Create a new image of the given size with all pixels transparent.
@@ -1908,11 +1903,19 @@ public class ImageUtils {
     }
 
     /**
-     * Prints a formatted line to the console.
+     * Set the PrintStream for log messages. Defaults to System.out.
+     * Use null to suppress logging.
      */
-    private static void log(String format, Object ... args) {
-        if (PRINT_LOG) {
-            System.out.println(String.format(format, args));
+    public static void setLogger(PrintStream out) {
+        mLogger = out;
+    }
+
+    /**
+     * Prints a formatted line to the logger.
+     */
+    static void log(String format, Object... args) {
+        if (mLogger != null) {
+            mLogger.println(String.format(format, args));
         }
     }
 }

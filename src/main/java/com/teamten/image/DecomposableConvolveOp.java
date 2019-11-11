@@ -88,7 +88,7 @@ public class DecomposableConvolveOp extends AbstractBufferedImageOp {
         // Go through every row of the source image.
         for (int yy = 0; yy < height; yy++) {
             if (yy % 1000 == 0) {
-                System.out.printf("Operation at line %d of %d%n", yy, height);
+                ImageUtils.log("Operation at line %d of %d%n", yy, height);
             }
             // Go through every pixel of the source row.
             for (int xx = 0; xx < width; xx++) {
