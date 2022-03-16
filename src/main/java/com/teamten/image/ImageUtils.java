@@ -1189,12 +1189,12 @@ public class ImageUtils {
 
         byte[] data = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
 
-        int index = 0;
+        int index = pixelCount - 3;
         for (int i = 0; i < pixelCount; i++) {
+            // Skip alpha, if any.
             data[index + 0] = (byte) (255 - ((int) data[index + 0] & 0xFF));
             data[index + 1] = (byte) (255 - ((int) data[index + 1] & 0xFF));
             data[index + 2] = (byte) (255 - ((int) data[index + 2] & 0xFF));
-            // Skip alpha, if any.
 
             index += bytesPerPixel;
         }
@@ -1221,7 +1221,7 @@ public class ImageUtils {
 
         byte[] data = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
 
-        int index = bytesPerPixel - 1;
+        int index = 0;
         for (int i = 0; i < pixelCount; i++) {
             data[index] = (byte) (255 - ((int) data[index] & 0xFF));
             index += bytesPerPixel;
