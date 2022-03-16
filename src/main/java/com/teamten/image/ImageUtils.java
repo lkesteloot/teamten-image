@@ -1203,6 +1203,34 @@ public class ImageUtils {
     }
 
     /**
+     * Returns an image with inverted alpha. Must have an alpha channel.
+     *
+     * @param image source image.
+     * @return a copy with the alpha inverted (transparent is opaque and vice versa).
+     */
+    public static BufferedImage invertAlpha(BufferedImage image) {
+        int width = image.getWidth();
+        int height = image.getHeight();
+        int pixelCount = width*height;
+        int bytesPerPixel = getBytesPerPixel(image);
+        if (bytesPerPixel != 4) {
+            throw new IllegalArgumentException("image must have alpha to be inverted");
+        }
+
+        image = copy(image);
+
+        byte[] data = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
+
+        int index = bytesPerPixel - 1;
+        for (int i = 0; i < pixelCount; i++) {
+            data[index] = (byte) (255 - ((int) data[index] & 0xFF));
+            index += bytesPerPixel;
+        }
+
+        return image;
+    }
+
+    /**
      * Sets the image to the grayscale value of each pixel snapped to the nearest
      * valid value. Uses the red channel for input. The alpha is untouched.
      *
@@ -1250,7 +1278,6 @@ public class ImageUtils {
 
         return image;
     }
-
 
     /**
      * Sets the image to one of the textures specified depending on the value

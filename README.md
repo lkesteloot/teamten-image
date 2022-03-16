@@ -8,14 +8,14 @@ Uses the JDK's `BufferedImage` objects, treating them as immutable images:
     image = ImageUtils.composeOverCheckerboard(image);
     ImageUtils.save(image, outputPathname);
 
-Available in jcenter:
+Available in jitpack:
 
     repositories {
-        jcenter()
+        maven { url "https://jitpack.io" }
     }
 
     dependencies {
-        compile 'com.teamten:teamten-image:1.0'
+        implementation 'com.github.lkesteloot:teamten-image:v1.4'
     }
 
 # License
